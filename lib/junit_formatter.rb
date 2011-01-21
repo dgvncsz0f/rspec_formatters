@@ -28,11 +28,13 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
 
   def read_failure(t)
     exception = t.metadata[:execution_result][:exception_encountered]
+    message = ""
     unless (exception.nil?)
-      return(format_backtrace(exception.backtrace, t).join("\n"))
-    else
-      return("")
+      message  = exception.message
+      message += "\n"
+      message += format_backtrace(exception.backtrace, t).join("\n")
     end
+    return(message)
   end
 
   def dump_summary(duration, example_count, failure_count, pending_count)
