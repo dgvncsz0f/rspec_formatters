@@ -26,17 +26,28 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
     super()
   end
 
+  def read_failure(t)
+    exception = t.metadata[:execution_result][:exception_encountered]
+    unless (exception.nil?)
+      return(format_backtrace(exception.backtrace, t).join("\n"))
+    else
+      return("")
+    end
+  end
+
   def dump_summary(duration, example_count, failure_count, pending_count)
     super(duration, example_count, failure_count, pending_count)
     xml  = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
     xml += "<testsuite errors=\"0\" failures=\"#{failure_count+pending_count}\" tests=\"#{example_count}\" time=\"#{duration}\" timestamp=\"#{Time.now.iso8601}\">\n"
     xml += "  <properties />\n"
     @tests[:success].each do |t|
-      xml += "  <testcase classname=\"#{t.metadata[:file_path]}\" name=\"#{t.metadata[:description]}\" time=\"#{t.metadata[:execution_result][:run_time]}\" />\n"
+      xml += "  <testcase classname=\"#{t.metadata[:file_path]}\" name=\"#{t.metadata[:full_description]}\" time=\"#{t.metadata[:execution_result][:run_time]}\" />\n"
     end
     @tests[:failures].each do |t|
-      xml += "  <testcase classname=\"#{t.metadata[:file_path]}\" name=\"#{t.metadata[:description]}\" time=\"#{t.metadata[:run_time]}\">\n"
-      xml += "    <failure message=\"\" type=\"failure\">\n"
+      xml += "  <testcase classname=\"#{t.metadata[:file_path]}\" name=\"#{t.metadata[:full_description]}\" time=\"#{t.metadata[:run_time]}\">\n"
+      xml += "    <failure message=\"failure\" type=\"failure\">\n"
+      xml += "<![CDATA[ #{read_failure(t)} ]]>\n"
+      xml += "    </failure>"
       xml += "  </testcase>\n"
     end
     xml += "</testsuite>\n"
