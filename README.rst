@@ -7,6 +7,8 @@ Provides tap and junit formatters for rspec.
 Usage
 =====
 
+::
+
     $ rspec -r ./lib/tap_formatter.rb --formatter TapFormatter ...
     ok 1 - should return the proper flags
     ok 2 - should the preset if metrics is true
@@ -17,6 +19,8 @@ Usage
     ok 7 - should invoke the ffmpeg binary with the flags defined in the profile and return true on success
     ok 8 - should invoke ffmpeg binary with the flags defined in the profile and return false on error
     ok 9 - should be able to parse SSIM and PSNR if available
+
+::
 
     $ rspec -r ./lib/junit_formatter.rb --formatter JUnitFormatter ...
     <?xml version="1.0" encoding="utf-8" ?>
