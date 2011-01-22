@@ -2,7 +2,7 @@ require "rubygems"
 require "rake"
 require "rspec/core/rake_task"
 
-RSpec::Core::RakeTask.new('rspec') do |t, args|
+RSpec::Core::RakeTask.new('rspec') do |t|
   mapper       = { "junit" => "JUnitFormatter" \
                  , "tap"   => "TapFormatter" \
                  }
