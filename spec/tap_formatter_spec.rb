@@ -43,7 +43,7 @@ describe TapFormatter do
     it "should increment the counter and use the full_description attribute" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:print).with("ok 1 - foobar\n")
+      @output.should_receive(:puts).with("ok 1 - foobar")
 
       f = TapFormatter.new(@output)
       f.example_passed(example)
@@ -58,7 +58,7 @@ describe TapFormatter do
     it "should increment the counter and use the full_description attribute" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:print).with("not ok 1 - foobar\n")
+      @output.should_receive(:puts).with("not ok 1 - foobar")
       
       f = TapFormatter.new(@output)
       f.example_failed(example)
@@ -72,7 +72,7 @@ describe TapFormatter do
     it "should do the same as example_failed" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:print).with("not ok 1 - foobar\n")
+      @output.should_receive(:puts).with("not ok 1 - foobar")
       
       f = TapFormatter.new(@output)
       f.example_pending(example)
@@ -89,10 +89,10 @@ describe TapFormatter do
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:print).with("ok 1 - foobar\n")
-      @output.should_receive(:print).with("not ok 2 - foobar\n")
-      @output.should_receive(:print).with("not ok 3 - foobar\n")
-      @output.should_receive(:print).with("1..3")
+      @output.should_receive(:puts).with("ok 1 - foobar")
+      @output.should_receive(:puts).with("not ok 2 - foobar")
+      @output.should_receive(:puts).with("not ok 3 - foobar")
+      @output.should_receive(:puts).with("1..3")
       
       f = TapFormatter.new(@output)
       f.example_passed(example)

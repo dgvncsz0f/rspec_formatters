@@ -40,7 +40,7 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
   def example_passed(example)
     super(example)
     @total += 1
-    output.print("ok #{@total} - #{example.metadata[:full_description]}\n")
+    output.puts("ok #{@total} - #{example.metadata[:full_description]}")
   end
 
   def example_pending(example)
@@ -50,13 +50,13 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
   def example_failed(example)
     super(example)
     @total += 1
-    output.print("not ok #{@total} - #{example.metadata[:full_description]}\n")
+    output.puts("not ok #{@total} - #{example.metadata[:full_description]}")
   end
 
   def dump_summary(duration, example_count, failure_count, pending_count)
     super(duration, example_count, failure_count, pending_count)
     if (@total > 0)
-      output.print("1..#{example_count}")
+      output.puts("1..#{example_count}")
     end
   end
 

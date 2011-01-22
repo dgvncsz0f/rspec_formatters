@@ -9,30 +9,42 @@ Usage
 
 ::
 
-    $ rspec -r ./lib/tap_formatter.rb --formatter TapFormatter ...
-    ok 1 - should return the proper flags
-    ok 2 - should the preset if metrics is true
-    ok 3 - should set the profile name to mobile
-    ok 4 - should always find an executable ffmpeg file
-    ok 5 - should disregard the input if it is a valid file and search for the real binary
-    ok 6 - should accept the input if its an executable file
-    ok 7 - should invoke the ffmpeg binary with the flags defined in the profile and return true on success
-    ok 8 - should invoke ffmpeg binary with the flags defined in the profile and return false on error
-    ok 9 - should be able to parse SSIM and PSNR if available
+    $ make RSPECFLAGS=-r\ lib/tap_formatter\ -f\ TapFormatter
+    /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/tap_formatter -f TapFormatter spec
+    ok 1 - TapFormatter should initialize the counter to 0
+    ok 2 - TapFormatter example_passed should increment the counter and use the full_description attribute
+    ok 3 - TapFormatter example_failed should increment the counter and use the full_description attribute
+    ok 4 - TapFormatter example_pending should do the same as example_failed
+    ok 5 - TapFormatter dump_summary should print the number of tests if there were tests
+    ok 6 - TapFormatter dump_summary should print nothing if there were not tests
+    ok 7 - JUnitFormatter should initialize the tests with failures and success
+    ok 8 - JUnitFormatter example_passed should push the example obj into success list
+    ok 9 - JUnitFormatter example_failed should push the example obj into failures list
+    ok 10 - JUnitFormatter example_pending should do the same as example_failed
+    ok 11 - JUnitFormatter read_failure should ignore if there is no exception
+    ok 12 - JUnitFormatter read_failure should read message and backtrace from the example
+    ok 13 - JUnitFormatter dump_summary should print the junit xml
+    1..13
 
 ::
 
-    $ rspec -r ./lib/junit_formatter.rb --formatter JUnitFormatter ...
+    $ make RSPECFLAGS=-r\ lib/junit_formatter\ -f\ JUnitFormatter 
+    /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/junit_formatter -f JUnitFormatter spec
     <?xml version="1.0" encoding="utf-8" ?>
-    <testsuite errors="0" failures="0" tests="9" time="0.013841" timestamp="2011-01-21T17:35:03-02:00">
+    <testsuite errors="0" failures="0" tests="13" time="0.019992" timestamp="2011-01-21T23:07:41-02:00">
       <properties />
-      <testcase classname="./spec/encoder/profile_spec.rb" name="should return the proper flags" time="0.000866" />
-      <testcase classname="./spec/encoder/profile_spec.rb" name="should the preset if metrics is true" time="0.000716" />
-      <testcase classname="./spec/encoder/profile_spec.rb" name="should set the profile name to mobile" time="0.000698" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should always find an executable ffmpeg file" time="0.00077" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should disregard the input if it is a valid file and search for the real binary" time="0.000761" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should accept the input if its an executable file" time="0.000691" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should invoke the ffmpeg binary with the flags defined in the profile and return true on success" time="0.001449" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should invoke ffmpeg binary with the flags defined in the profile and return false on error" time="0.001355" />
-      <testcase classname="./spec/encoder/ffmpeg_spec.rb" name="should be able to parse SSIM and PSNR if available" time="0.004969" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter should initialize the counter to 0" time="0.001298" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter example_passed should increment the counter and use the full_description attribute" time="0.001546" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter example_failed should increment the counter and use the full_description attribute" time="0.001427" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter example_pending should do the same as example_failed" time="0.001456" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter dump_summary should print the number of tests if there were tests" time="0.00177" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/tap_formatter_spec.rb" name="TapFormatter dump_summary should print nothing if there were not tests" time="0.000398" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter should initialize the tests with failures and success" time="0.000859" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter example_passed should push the example obj into success list" time="0.000829" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter example_failed should push the example obj into failures list" time="0.000778" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter example_pending should do the same as example_failed" time="0.000758" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter read_failure should ignore if there is no exception" time="0.00119" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter read_failure should read message and backtrace from the example" time="0.001823" />
+      <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter dump_summary should print the junit xml" time="0.003813" />
     </testsuite>
+
