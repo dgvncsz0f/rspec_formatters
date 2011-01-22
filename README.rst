@@ -2,11 +2,6 @@
 RSpec Formatters
 ================
 
-Provides tap and junit formatters for rspec.
-
-Usage
-=====
-
 ::
 
     $ make RSPECFLAGS=-r\ lib/tap_formatter\ -f\ TapFormatter
