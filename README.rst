@@ -4,7 +4,7 @@ RSpec Formatters
 
 ::
 
-    $ make RSPECFLAGS=-r\ lib/tap_formatter\ -f\ TapFormatter
+    $ rake format=tap
     /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/tap_formatter -f TapFormatter spec
     ok 1 - TapFormatter should initialize the counter to 0
     ok 2 - TapFormatter example_passed should increment the counter and use the full_description attribute
@@ -23,7 +23,7 @@ RSpec Formatters
 
 ::
 
-    $ make RSPECFLAGS=-r\ lib/junit_formatter\ -f\ JUnitFormatter 
+    $ rake format=junit
     /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/junit_formatter -f JUnitFormatter spec
     <?xml version="1.0" encoding="utf-8" ?>
     <testsuite errors="0" failures="0" tests="13" time="0.019992" timestamp="2011-01-21T23:07:41-02:00">
