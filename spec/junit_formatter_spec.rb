@@ -72,9 +72,25 @@ describe JUnitFormatter do
 
     it "should ignore if there is no exception" do
       example = mock("example")
-      example.should_receive(:metadata).and_return({:execution_result => {:exception_encountered => nil}})
+      example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => { :exception_encountered => nil \
+                                                                                          , :exception => nil \
+                                                                                          }})
       f = JUnitFormatter.new(@output)
       f.read_failure(example).should eql("")
+    end
+
+    it "should attempt to read exception if exception encountered is nil" do
+      strace = mock("stacktrace")
+      strace.should_receive(:message).and_return("foobar")
+      strace.should_receive(:backtrace).and_return(["foo","bar"])
+
+      example = mock("example")
+      example.should_receive(:metadata).exactly(3).times.and_return({:execution_result => { :exception_encountered => nil \
+                                                                                          , :exception => strace \
+                                                                                          }})
+
+      f = JUnitFormatter.new(@output)
+      f.read_failure(example).should eql("foobar\nfoo\nbar")
     end
 
     it "should read message and backtrace from the example" do
@@ -83,8 +99,7 @@ describe JUnitFormatter do
       strace.should_receive(:backtrace).and_return(["foo","bar"])
 
       example    = mock("example")
-      example.should_receive(:metadata).and_return({:execution_result => {:exception_encountered => strace}})
-      example.should_receive(:metadata).and_return({:execution_result => {:exception_encountered => strace}})
+      example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => {:exception_encountered => strace}})
 
       f = JUnitFormatter.new(@output)
       f.read_failure(example).should eql("foobar\nfoo\nbar")

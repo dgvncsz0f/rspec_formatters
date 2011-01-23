@@ -53,7 +53,7 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
   end
 
   def read_failure(t)
-    exception = t.metadata[:execution_result][:exception_encountered]
+    exception = t.metadata[:execution_result][:exception_encountered] || t.metadata[:execution_result][:exception]
     message = ""
     unless (exception.nil?)
       message  = exception.message
