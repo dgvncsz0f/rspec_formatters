@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   EOF
   spec.summary = 'TAP and JUnit formatters for rspec'
   spec.authors = ['Diego Souza', 'Floréal TOUMIKIAN']
-  spec.email = 'dsouza@bitforest.org'
+  spec.email = 'dsouza+rspec_formatters@bitforest.org'
   spec.homepage = 'http://dsouza.bitforest.org/2011/01/22/rspec-tap-and-junit-formatters/'
 
   spec.files = Dir['lib/**/*.rb']
