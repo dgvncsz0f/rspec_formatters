@@ -1,3 +1,3 @@
 require "rspec"
-require "lib/junit_formatter"
-require "lib/tap_formatter"
+require "lib/rspec-extra-formatters/junit_formatter"
+require "lib/rspec-extra-formatters/tap_formatter"
