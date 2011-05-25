@@ -5,7 +5,7 @@ RSpec Formatters
 ::
 
     $ rake format=tap
-    /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/tap_formatter -f TapFormatter spec
+    /bin/ruby -S rcov -Ispec:lib -x . -i "lib/rspec-extra-formatters/(junit|tap)_formatter.rb" --text-report spec/rspec-extra-formatters/junit_formatter_spec.rb spec/rspec-extra-formatters/tap_formatter_spec.rb -- --no-color -r lib/rspec-extra-formatters/junit_formatter.rb -r lib/rspec-extra-formatters/tap_formatter.rb -f "TapFormatter"
     ok 1 - TapFormatter should initialize the counter to 0
     ok 2 - TapFormatter example_passed should increment the counter and use the full_description attribute
     ok 3 - TapFormatter example_failed should increment the counter and use the full_description attribute
@@ -24,7 +24,7 @@ RSpec Formatters
 ::
 
     $ rake format=junit
-    /var/lib/gems/1.8/bin/rcov -o dist/coverage -x . -i lib/junit_formatter,lib/tap_formatter --text-report /var/lib/gems/1.8/bin/rspec -- -Ilib -r lib/junit_formatter -f JUnitFormatter spec
+    /bin/ruby -S rcov -Ispec:lib -x . -i "lib/rspec-extra-formatters/(junit|tap)_formatter.rb" --text-report spec/rspec-extra-formatters/junit_formatter_spec.rb spec/rspec-extra-formatters/tap_formatter_spec.rb -- --no-color -r lib/rspec-extra-formatters/junit_formatter.rb -r lib/rspec-extra-formatters/tap_formatter.rb -f "JUnitFormatter"
     <?xml version="1.0" encoding="utf-8" ?>
     <testsuite errors="0" failures="0" tests="13" time="0.019992" timestamp="2011-01-21T23:07:41-02:00">
       <properties />
