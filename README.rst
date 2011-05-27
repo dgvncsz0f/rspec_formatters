@@ -5,7 +5,6 @@ RSpec Formatters
 ::
 
     $ rake format=tap
-    /bin/ruby -S rcov -Ispec:lib -x . -i "lib/rspec-extra-formatters/(junit|tap)_formatter.rb" --text-report spec/rspec-extra-formatters/junit_formatter_spec.rb spec/rspec-extra-formatters/tap_formatter_spec.rb -- --no-color -r lib/rspec-extra-formatters/junit_formatter.rb -r lib/rspec-extra-formatters/tap_formatter.rb -f "TapFormatter"
     ok 1 - TapFormatter should initialize the counter to 0
     ok 2 - TapFormatter example_passed should increment the counter and use the full_description attribute
     ok 3 - TapFormatter example_failed should increment the counter and use the full_description attribute
@@ -24,7 +23,6 @@ RSpec Formatters
 ::
 
     $ rake format=junit
-    /bin/ruby -S rcov -Ispec:lib -x . -i "lib/rspec-extra-formatters/(junit|tap)_formatter.rb" --text-report spec/rspec-extra-formatters/junit_formatter_spec.rb spec/rspec-extra-formatters/tap_formatter_spec.rb -- --no-color -r lib/rspec-extra-formatters/junit_formatter.rb -r lib/rspec-extra-formatters/tap_formatter.rb -f "JUnitFormatter"
     <?xml version="1.0" encoding="utf-8" ?>
     <testsuite errors="0" failures="0" tests="13" time="0.019992" timestamp="2011-01-21T23:07:41-02:00">
       <properties />
@@ -42,4 +40,9 @@ RSpec Formatters
       <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter read_failure should read message and backtrace from the example" time="0.001823" />
       <testcase classname="/home/dsouza/dev/github/rspec_formatters/spec/junit_formatter_spec.rb" name="JUnitFormatter dump_summary should print the junit xml" time="0.003813" />
     </testsuite>
+
+Using it
+========
+
+Make sure you add `-r "rspec-extra-formatters"` to rspec options and both `-f JUnitFormatter` and `-f TapFormatter` should work. :-)
 
