@@ -69,14 +69,18 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
     output.puts("<testsuite errors=\"0\" failures=\"#{failure_count+pending_count}\" tests=\"#{example_count}\" time=\"#{duration}\" timestamp=\"#{Time.now.iso8601}\">")
     output.puts("  <properties />")
     @test_results[:successes].each do |t|
-      md      = t.metadata
-      runtime = md[:execution_result][:run_time]
-      output.puts("  <testcase classname=\"#{md[:file_path]}\" name=\"#{md[:full_description]}\" time=\"#{runtime}\" />")
+      md          = t.metadata
+      runtime     = md[:execution_result][:run_time]
+      description = _xml_escape(md[:full_description])
+      file_path   = _xml_escape(md[:file_path])
+      output.puts("  <testcase classname=\"#{file_path}\" name=\"#{description}\" time=\"#{runtime}\" />")
     end
     @test_results[:failures].each do |t|
-      md      = t.metadata
-      runtime = md[:execution_result][:run_time]
-      output.puts("  <testcase classname=\"#{md[:file_path]}\" name=\"#{md[:full_description]}\" time=\"#{runtime}\">")
+      md          = t.metadata
+      description = _xml_escape(md[:full_description])
+      file_path   = _xml_escape(md[:file_path])
+      runtime     = md[:execution_result][:run_time]
+      output.puts("  <testcase classname=\"#{file_path}\" name=\"#{description}\" time=\"#{runtime}\">")
       output.puts("    <failure message=\"failure\" type=\"failure\">")
       output.puts("<![CDATA[ #{read_failure(t)} ]]>")
       output.puts("    </failure>")
@@ -85,4 +89,10 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
     output.puts("</testsuite>")
   end
 
+  def _xml_escape(x)
+    x.gsub("&", "&amp;").
+      gsub("\"", "&quot;").
+      gsub(">", "&gt;").
+      gsub("<", "&lt;")
+  end
 end
