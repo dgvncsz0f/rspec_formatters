@@ -1,3 +1,2 @@
 require "rspec"
-require "lib/rspec-extra-formatters/junit_formatter"
-require "lib/rspec-extra-formatters/tap_formatter"
+require File.expand_path(File.dirname(__FILE__) + "/../lib/rspec-extra-formatters.rb")
