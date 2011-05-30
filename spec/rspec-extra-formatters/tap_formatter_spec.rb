@@ -26,16 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require "spec/spec_helper"
+require "stringio"
+require File.expand_path(File.dirname(__FILE__) + "/../spec_helper.rb")
 
 describe TapFormatter do
 
-  before(:each) do
-    @output = mock("output")
-  end
-
   it "should initialize the counter to 0" do
-    TapFormatter.new(@output).total.should eql(0)
+    TapFormatter.new(StringIO.new).total.should eql(0)
   end
 
   describe "example_passed" do
@@ -43,12 +40,13 @@ describe TapFormatter do
     it "should increment the counter and use the full_description attribute" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:puts).with("ok 1 - foobar")
 
-      f = TapFormatter.new(@output)
+      output = StringIO.new
+      f = TapFormatter.new(output)
       f.example_passed(example)
 
       f.total.should eql(1)
+      output.string.should == "ok 1 - foobar\n"
     end
 
   end
@@ -58,12 +56,13 @@ describe TapFormatter do
     it "should increment the counter and use the full_description attribute" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:puts).with("not ok 1 - foobar")
-      
-      f = TapFormatter.new(@output)
+
+      output = StringIO.new
+      f = TapFormatter.new(output)
       f.example_failed(example)
       
       f.total.should eql(1)
+      output.string.should == "not ok 1 - foobar\n"
     end
   end
 
@@ -72,12 +71,13 @@ describe TapFormatter do
     it "should do the same as example_failed" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:puts).with("not ok 1 - foobar")
       
-      f = TapFormatter.new(@output)
+      output = StringIO.new
+      f = TapFormatter.new(output)
       f.example_pending(example)
       
       f.total.should eql(1)
+      output.string.should == "not ok 1 - foobar\n"
     end
 
   end
@@ -89,16 +89,20 @@ describe TapFormatter do
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      @output.should_receive(:puts).with("ok 1 - foobar")
-      @output.should_receive(:puts).with("not ok 2 - foobar")
-      @output.should_receive(:puts).with("not ok 3 - foobar")
-      @output.should_receive(:puts).with("1..3")
       
-      f = TapFormatter.new(@output)
+      output = StringIO.new
+      f = TapFormatter.new(output)
       f.example_passed(example)
       f.example_failed(example)
       f.example_pending(example)
       f.dump_summary(0.1, 3, 1, 1)
+
+      output.string.should == <<-EOF
+ok 1 - foobar
+not ok 2 - foobar
+not ok 3 - foobar
+1..3
+      EOF
     end
 
     it "should print nothing if there were not tests" do

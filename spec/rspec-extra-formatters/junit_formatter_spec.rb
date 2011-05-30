@@ -26,22 +26,24 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require "spec/spec_helper"
+require "stringio"
+require File.expand_path(File.dirname(__FILE__) + "/../spec_helper.rb")
 
 describe JUnitFormatter do
 
   before(:each) do
-    @output = mock("output")
+    @now = Time.now
+    Time.stub(:now).and_return(@now)
   end
 
   it "should initialize the tests with failures and success" do
-    JUnitFormatter.new(@output).test_results.should eql({:failures=>[], :successes=>[]})
+    JUnitFormatter.new(StringIO.new).test_results.should eql({:failures=>[], :successes=>[]})
   end
 
   describe "example_passed" do
 
     it "should push the example obj into success list" do
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.example_passed("foobar")
       f.test_results[:successes].should eql(["foobar"])
     end
@@ -51,7 +53,7 @@ describe JUnitFormatter do
   describe "example_failed" do
 
     it "should push the example obj into failures list" do
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.example_failed("foobar")
       f.test_results[:failures].should eql(["foobar"])
     end
@@ -61,7 +63,7 @@ describe JUnitFormatter do
   describe "example_pending" do
 
     it "should do the same as example_failed" do
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.example_pending("foobar")
       f.test_results[:failures].should eql(["foobar"])
     end
@@ -75,7 +77,7 @@ describe JUnitFormatter do
       example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => { :exception_encountered => nil \
                                                                                           , :exception => nil \
                                                                                           }})
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.read_failure(example).should eql("")
     end
 
@@ -89,7 +91,7 @@ describe JUnitFormatter do
                                                                                           , :exception => strace \
                                                                                           }})
 
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.read_failure(example).should eql("foobar\nfoo\nbar")
     end
 
@@ -101,7 +103,7 @@ describe JUnitFormatter do
       example    = mock("example")
       example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => {:exception_encountered => strace}})
 
-      f = JUnitFormatter.new(@output)
+      f = JUnitFormatter.new(StringIO.new)
       f.read_failure(example).should eql("foobar\nfoo\nbar")
     end
 
@@ -115,12 +117,12 @@ describe JUnitFormatter do
       strace.should_receive(:backtrace).and_return(["foo","bar"])
    
       example0 = mock("example-0")
-      example1 = mock("example-1")
       example0.should_receive(:metadata).and_return({ :full_description => "foobar-success" \
                                                     , :file_path        => "lib/foobar-s.rb" \
                                                     , :execution_result => { :run_time => 0.1 } \
                                                     })
    
+      example1 = mock("example-1")
       example1.should_receive(:metadata).exactly(3).times.and_return({ :full_description => "foobar-failure" \
                                                                      , :file_path        => "lib/foobar-f.rb" \
                                                                      , :execution_result => { :exception_encountered => strace \
@@ -128,21 +130,45 @@ describe JUnitFormatter do
                                                                                             }
                                                                      })
    
-      @output.should_receive(:puts).with("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
-      @output.should_receive(:puts).with("<testsuite errors=\"0\" failures=\"1\" tests=\"2\" time=\"0.1\" timestamp=\"#{Time.now.iso8601}\">")
-      @output.should_receive(:puts).with("  <properties />")
-      @output.should_receive(:puts).with("  <testcase classname=\"lib/foobar-s.rb\" name=\"foobar-success\" time=\"0.1\" />")
-      @output.should_receive(:puts).with("  <testcase classname=\"lib/foobar-f.rb\" name=\"foobar-failure\" time=\"0.1\">")
-      @output.should_receive(:puts).with("    <failure message=\"failure\" type=\"failure\">")
-      @output.should_receive(:puts).with("<![CDATA[ foobar\nfoo\nbar ]]>")
-      @output.should_receive(:puts).with("    </failure>")
-      @output.should_receive(:puts).with("  </testcase>")
-      @output.should_receive(:puts).with("</testsuite>")
-   
-      f = JUnitFormatter.new(@output)
+      output = StringIO.new
+      f = JUnitFormatter.new(output)
       f.example_passed(example0)
       f.example_failed(example1)
       f.dump_summary("0.1", 2, 1, 0)
+
+      output.string.should == <<-EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<testsuite errors="0" failures="1" tests="2" time="0.1" timestamp="#{@now.iso8601}">
+  <properties />
+  <testcase classname="lib/foobar-s.rb" name="foobar-success" time="0.1" />
+  <testcase classname="lib/foobar-f.rb" name="foobar-failure" time="0.1">
+    <failure message="failure" type="failure">
+<![CDATA[ foobar\nfoo\nbar ]]>
+    </failure>
+  </testcase>
+</testsuite>
+      EOF
+    end
+
+    it "should escape characteres <,>,&,\" before building xml" do
+      example0 = mock("example-0")
+      example0.should_receive(:metadata).and_return({ :full_description => "foobar-success >>> &\"& <<<" \
+                                                    , :file_path        => "lib/>foobar-s.rb" \
+                                                    , :execution_result => { :run_time => 0.1 } \
+                                                    })
+
+      output = StringIO.new
+      f = JUnitFormatter.new(output)
+      f.example_passed(example0)
+      f.dump_summary("0.1", 2, 1, 0)
+
+      output.string.should == <<-EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<testsuite errors="0" failures="1" tests="2" time="0.1" timestamp="#{@now.iso8601}">
+  <properties />
+  <testcase classname="lib/&gt;foobar-s.rb" name="foobar-success &gt;&gt;&gt; &amp;&quot;&amp; &lt;&lt;&lt;" time="0.1" />
+</testsuite>
+      EOF
     end
    
   end
