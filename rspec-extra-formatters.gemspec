@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = "rspec-extra-formatters"
-  spec.version     = "0.2"
+  spec.version     = "0.3"
   spec.date        = %q{2011-05-26}
   spec.summary     = "TAP and JUnit formatters for rspec"
   spec.authors     = ["Diego Souza", "Floréal TOUMIKIAN"]
