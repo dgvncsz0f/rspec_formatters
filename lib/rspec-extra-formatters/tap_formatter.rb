@@ -32,6 +32,10 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
 
   attr_reader :total
 
+  OK     = 'ok'
+  NOT_OK = 'not ok'
+  TODO   = '# TODO '
+
   def initialize(output)
     super(output)      
     @total = 0
@@ -39,18 +43,17 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
 
   def example_passed(example)
     super(example)
-    @total += 1
-    output.puts("ok #{@total} - #{example.metadata[:full_description]}")
+    tap_example_output(OK, example)
   end
 
   def example_pending(example)
-    self.example_failed(example)
+    super(example)
+    tap_example_output(NOT_OK, example, TODO)
   end
 
   def example_failed(example)
     super(example)
-    @total += 1
-    output.puts("not ok #{@total} - #{example.metadata[:full_description]}")
+    tap_example_output(NOT_OK, example)
   end
 
   def dump_summary(duration, example_count, failure_count, pending_count)
@@ -58,6 +61,12 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
     if (@total > 0)
       output.puts("1..#{example_count}")
     end
+  end
+
+  private
+  def tap_example_output(ok, example, modifier='')
+    @total += 1
+    output.puts("#{ok} #{@total} - #{modifier}#{example.metadata[:full_description]}")
   end
 
 end
