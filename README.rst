@@ -8,7 +8,7 @@ RSpec Formatters
     ok 1 - TapFormatter should initialize the counter to 0
     ok 2 - TapFormatter example_passed should increment the counter and use the full_description attribute
     ok 3 - TapFormatter example_failed should increment the counter and use the full_description attribute
-    ok 4 - TapFormatter example_pending should do the same as example_failed
+    ok 4 - TapFormatter example_pending should do the same as example_failed with TODO comment
     ok 5 - TapFormatter dump_summary should print the number of tests if there were tests
     ok 6 - TapFormatter dump_summary should print nothing if there were not tests
     ok 7 - JUnitFormatter should initialize the tests with failures and success
