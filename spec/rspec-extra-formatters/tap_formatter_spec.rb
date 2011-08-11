@@ -68,7 +68,7 @@ describe TapFormatter do
 
   describe "example_pending" do
 
-    it "should do the same as example_failed" do
+    it "should do the same as example_failed with TODO comment" do
       example = mock("example")
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       
@@ -77,7 +77,7 @@ describe TapFormatter do
       f.example_pending(example)
       
       f.total.should eql(1)
-      output.string.should == "not ok 1 - foobar\n"
+      output.string.should == "not ok 1 - # TODO foobar\n"
     end
 
   end
@@ -100,7 +100,7 @@ describe TapFormatter do
       output.string.should == <<-EOF
 ok 1 - foobar
 not ok 2 - foobar
-not ok 3 - foobar
+not ok 3 - # TODO foobar
 1..3
       EOF
     end
