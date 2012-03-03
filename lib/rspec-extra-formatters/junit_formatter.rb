@@ -35,7 +35,7 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
 
   def initialize(output)
     super(output)      
-    @test_results = { :failures => [], :successes => [] }
+    @test_results = { :failures => [], :successes => [], :skipped => [] }
   end
 
   def example_passed(example)
@@ -44,7 +44,8 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
   end
 
   def example_pending(example)
-    self.example_failed(example)
+    super(example)
+    @test_results[:skipped].push(example)
   end
 
   def example_failed(example)
@@ -66,7 +67,7 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
   def dump_summary(duration, example_count, failure_count, pending_count)
     super(duration, example_count, failure_count, pending_count)
     output.puts("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
-    output.puts("<testsuite errors=\"0\" failures=\"#{failure_count+pending_count}\" tests=\"#{example_count}\" time=\"#{duration}\" timestamp=\"#{Time.now.iso8601}\">")
+    output.puts("<testsuite errors=\"0\" failures=\"#{failure_count}\" skipped=\"#{pending_count}\" tests=\"#{example_count}\" time=\"#{duration}\" timestamp=\"#{Time.now.iso8601}\">")
     output.puts("  <properties />")
     @test_results[:successes].each do |t|
       md          = t.metadata
@@ -84,6 +85,15 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
       output.puts("    <failure message=\"failure\" type=\"failure\">")
       output.puts("<![CDATA[ #{read_failure(t)} ]]>")
       output.puts("    </failure>")
+      output.puts("  </testcase>")
+    end
+    @test_results[:skipped].each do |t|
+      md          = t.metadata
+      description = _xml_escape(md[:full_description])
+      file_path   = _xml_escape(md[:file_path])
+      runtime     = md[:execution_result][:run_time]
+      output.puts("  <testcase classname=\"#{file_path}\" name=\"#{description}\" time=\"#{runtime}\">")
+      output.puts("    <skipped/>")
       output.puts("  </testcase>")
     end
     output.puts("</testsuite>")
