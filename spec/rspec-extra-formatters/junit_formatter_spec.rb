@@ -37,7 +37,7 @@ describe JUnitFormatter do
   end
 
   it "should initialize the tests with failures and success" do
-    JUnitFormatter.new(StringIO.new).test_results.should eql({:failures=>[], :successes=>[]})
+    JUnitFormatter.new(StringIO.new).test_results.should eql({:failures=>[], :successes=>[], :skipped=>[]})
   end
 
   describe "example_passed" do
@@ -62,10 +62,10 @@ describe JUnitFormatter do
 
   describe "example_pending" do
 
-    it "should do the same as example_failed" do
+    it "should push the example obj into the skipped list" do
       f = JUnitFormatter.new(StringIO.new)
       f.example_pending("foobar")
-      f.test_results[:failures].should eql(["foobar"])
+      f.test_results[:skipped].should eql(["foobar"])
     end
 
   end
@@ -129,22 +129,33 @@ describe JUnitFormatter do
                                                                                             , :run_time              => 0.1 \
                                                                                             }
                                                                      })
+
+      example2 = mock("example-2")
+      example2.should_receive(:metadata).and_return({ :full_description => "foobar-pending" \
+                                                   , :file_path        => "lib/foobar-s.rb" \
+                                                   , :execution_result => { :run_time => 0.1 } \
+                                                   })
+
    
       output = StringIO.new
       f = JUnitFormatter.new(output)
       f.example_passed(example0)
       f.example_failed(example1)
-      f.dump_summary("0.1", 2, 1, 0)
+      f.example_pending(example2)      
+      f.dump_summary("0.1", 3, 1, 1)
 
       output.string.should == <<-EOF
 <?xml version="1.0" encoding="utf-8" ?>
-<testsuite errors="0" failures="1" tests="2" time="0.1" timestamp="#{@now.iso8601}">
+<testsuite errors="0" failures="1" skipped="1" tests="3" time="0.1" timestamp="#{@now.iso8601}">
   <properties />
   <testcase classname="lib/foobar-s.rb" name="foobar-success" time="0.1" />
   <testcase classname="lib/foobar-f.rb" name="foobar-failure" time="0.1">
     <failure message="failure" type="failure">
 <![CDATA[ foobar\nfoo\nbar ]]>
     </failure>
+  </testcase>
+  <testcase classname="lib/foobar-s.rb" name="foobar-pending" time="0.1">
+    <skipped/>
   </testcase>
 </testsuite>
       EOF
@@ -164,7 +175,7 @@ describe JUnitFormatter do
 
       output.string.should == <<-EOF
 <?xml version="1.0" encoding="utf-8" ?>
-<testsuite errors="0" failures="1" tests="2" time="0.1" timestamp="#{@now.iso8601}">
+<testsuite errors="0" failures="1" skipped="0" tests="2" time="0.1" timestamp="#{@now.iso8601}">
   <properties />
   <testcase classname="lib/&gt;foobar-s.rb" name="foobar-success &gt;&gt;&gt; &amp;&quot;&amp; &lt;&lt;&lt;" time="0.1" />
 </testsuite>
