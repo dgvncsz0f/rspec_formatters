@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 Gem::Specification.new do |spec|
   spec.name        = "rspec-extra-formatters"
   spec.version     = "0.3"
