@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 Gem::Specification.new do |spec|
   spec.name        = "rspec-extra-formatters"
-  spec.version     = "0.3"
-  spec.date        = %q{2011-05-26}
+  spec.version     = "0.4"
+  spec.date        = %q{2012-04-24}
   spec.summary     = "TAP and JUnit formatters for rspec"
   spec.authors     = ["Diego Souza", "Floréal TOUMIKIAN"]
   spec.email       = "dsouza+rspec-extra-formatters@bitforest.org"
