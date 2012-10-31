@@ -31,14 +31,22 @@ require "rspec/core/formatters/base_formatter"
 class TapFormatter < RSpec::Core::Formatters::BaseFormatter
 
   attr_reader :total
-
+    $VERBOSE = nil
   OK     = 'ok'
   NOT_OK = 'not ok'
   TODO   = '# TODO '
+  SKIP = '# SKIP '
 
   def initialize(output)
     super(output)      
     @total = 0
+  end
+
+  def start(example_count)
+      super(example_count)
+      output.puts("TAP version 13")
+      output.puts("1.." + example_count.to_s)
+
   end
 
   def example_passed(example)
@@ -48,25 +56,27 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
 
   def example_pending(example)
     super(example)
-    tap_example_output(NOT_OK, example, TODO)
+    tap_example_output(NOT_OK, example, SKIP)
   end
 
   def example_failed(example)
     super(example)
     tap_example_output(NOT_OK, example)
+    output.puts("    ---")
+    my_exception = example.exception.to_s
+    my_exception.gsub! /"/, ''
+    output.puts("     #{my_exception} ")
+    output.puts("     ...")
   end
 
   def dump_summary(duration, example_count, failure_count, pending_count)
     super(duration, example_count, failure_count, pending_count)
-    if (@total > 0)
-      output.puts("1..#{example_count}")
-    end
   end
 
   private
   def tap_example_output(ok, example, modifier='')
     @total += 1
-    output.puts("#{ok} #{@total} - #{modifier}#{example.metadata[:full_description]}")
+    output.puts("#{ok} #{@total} - #{modifier} #{example.metadata[:full_description]}")
   end
 
 end
