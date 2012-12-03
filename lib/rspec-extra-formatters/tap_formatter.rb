@@ -35,7 +35,7 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
   OK     = 'ok'
   NOT_OK = 'not ok'
   TODO   = '# TODO '
-  SKIP = '# SKIP '
+  SKIP   = '# SKIP '
 
   def initialize(output)
     super(output)      
@@ -76,7 +76,7 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
   private
   def tap_example_output(ok, example, modifier='')
     @total += 1
-    output.puts("#{ok} #{@total} - #{modifier} #{example.metadata[:full_description]}")
+    output.puts("#{ok} #{@total} - #{modifier}#{example.metadata[:full_description]}")
   end
 
 end

@@ -55,6 +55,7 @@ describe TapFormatter do
 
     it "should increment the counter and use the full_description attribute" do
       example = mock("example")
+      example.stub(:exception) { "exception message" }
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
 
       output = StringIO.new
@@ -62,14 +63,20 @@ describe TapFormatter do
       f.example_failed(example)
       
       f.total.should eql(1)
-      output.string.should == "not ok 1 - foobar\n"
+      output.string.should == <<-EOF
+not ok 1 - foobar
+    ---
+     exception message 
+     ...
+      EOF
     end
   end
 
   describe "example_pending" do
 
-    it "should do the same as example_failed with TODO comment" do
+    it "should do the same as example_failed with SKIP comment" do
       example = mock("example")
+      example.stub(:exception) { "exception message" }
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       
       output = StringIO.new
@@ -77,7 +84,7 @@ describe TapFormatter do
       f.example_pending(example)
       
       f.total.should eql(1)
-      output.string.should == "not ok 1 - # TODO foobar\n"
+      output.string.should == "not ok 1 - # SKIP foobar\n"
     end
 
   end
@@ -86,6 +93,7 @@ describe TapFormatter do
 
     it "should print the number of tests if there were tests" do
       example = mock("example")
+      example.stub(:exception) { "exception message" }
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
       example.should_receive(:metadata).and_return({:full_description => "foobar"})
@@ -100,8 +108,10 @@ describe TapFormatter do
       output.string.should == <<-EOF
 ok 1 - foobar
 not ok 2 - foobar
-not ok 3 - # TODO foobar
-1..3
+    ---
+     exception message 
+     ...
+not ok 3 - # SKIP foobar
       EOF
     end
 
