@@ -14,5 +14,5 @@ Gem::Specification.new do |spec|
     rspec-extra-formatters Provides TAP and JUnit formatters for rspec
   EOF
 
-  spec.add_development_dependency("rspec")
+  spec.add_development_dependency("rspec", '~> 2.11')
 end
