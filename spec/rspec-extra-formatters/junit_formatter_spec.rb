@@ -33,11 +33,11 @@ describe JUnitFormatter do
 
   before(:each) do
     @now = Time.now
-    Time.stub(:now).and_return(@now)
+    allow(Time).to receive(:now).and_return(@now)
   end
 
   it "should initialize the tests with failures and success" do
-    JUnitFormatter.new(StringIO.new).test_results.should eql({:failures=>[], :successes=>[], :skipped=>[]})
+    expect(JUnitFormatter.new(StringIO.new).test_results).to eql({:failures=>[], :successes=>[], :skipped=>[]})
   end
 
   describe "example_passed" do
@@ -45,7 +45,7 @@ describe JUnitFormatter do
     it "should push the example obj into success list" do
       f = JUnitFormatter.new(StringIO.new)
       f.example_passed("foobar")
-      f.test_results[:successes].should eql(["foobar"])
+      expect(f.test_results[:successes]).to eql(["foobar"])
     end
 
   end
@@ -55,7 +55,7 @@ describe JUnitFormatter do
     it "should push the example obj into failures list" do
       f = JUnitFormatter.new(StringIO.new)
       f.example_failed("foobar")
-      f.test_results[:failures].should eql(["foobar"])
+      expect(f.test_results[:failures]).to eql(["foobar"])
     end
 
   end
@@ -65,7 +65,7 @@ describe JUnitFormatter do
     it "should push the example obj into the skipped list" do
       f = JUnitFormatter.new(StringIO.new)
       f.example_pending("foobar")
-      f.test_results[:skipped].should eql(["foobar"])
+      expect(f.test_results[:skipped]).to eql(["foobar"])
     end
 
   end
@@ -73,38 +73,38 @@ describe JUnitFormatter do
   describe "read_failure" do
 
     it "should ignore if there is no exception" do
-      example = mock("example")
-      example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => { :exception_encountered => nil \
+      example = double("example")
+      expect(example).to receive(:metadata).exactly(2).times.and_return({:execution_result => { :exception_encountered => nil \
                                                                                           , :exception => nil \
                                                                                           }})
       f = JUnitFormatter.new(StringIO.new)
-      f.read_failure(example).should eql("")
+      expect(f.read_failure(example)).to eql("")
     end
 
     it "should attempt to read exception if exception encountered is nil" do
-      strace = mock("stacktrace")
-      strace.should_receive(:message).and_return("foobar")
-      strace.should_receive(:backtrace).and_return(["foo","bar"])
+      strace = double("stacktrace")
+      expect(strace).to receive(:message).and_return("foobar")
+      expect(strace).to receive(:backtrace).and_return(["foo","bar"])
 
-      example = mock("example")
-      example.should_receive(:metadata).exactly(3).times.and_return({:execution_result => { :exception_encountered => nil \
+      example = double("example")
+      expect(example).to receive(:metadata).exactly(3).times.and_return({:execution_result => { :exception_encountered => nil \
                                                                                           , :exception => strace \
                                                                                           }})
 
       f = JUnitFormatter.new(StringIO.new)
-      f.read_failure(example).should eql("foobar\nfoo\nbar")
+      expect(f.read_failure(example)).to eql("foobar\nfoo\nbar")
     end
 
     it "should read message and backtrace from the example" do
-      strace = mock("stacktrace")
-      strace.should_receive(:message).and_return("foobar")
-      strace.should_receive(:backtrace).and_return(["foo","bar"])
+      strace = double("stacktrace")
+      expect(strace).to receive(:message).and_return("foobar")
+      expect(strace).to receive(:backtrace).and_return(["foo","bar"])
 
-      example    = mock("example")
-      example.should_receive(:metadata).exactly(2).times.and_return({:execution_result => {:exception_encountered => strace}})
+      example    = double("example")
+      expect(example).to receive(:metadata).exactly(2).times.and_return({:execution_result => {:exception_encountered => strace}})
 
       f = JUnitFormatter.new(StringIO.new)
-      f.read_failure(example).should eql("foobar\nfoo\nbar")
+      expect(f.read_failure(example)).to eql("foobar\nfoo\nbar")
     end
 
   end
@@ -112,26 +112,26 @@ describe JUnitFormatter do
   describe "dump_summary" do
    
     it "should print the junit xml" do
-      strace = mock("stacktrace")
-      strace.should_receive(:message).and_return("foobar")
-      strace.should_receive(:backtrace).and_return(["foo","bar"])
+      strace = double("stacktrace")
+      expect(strace).to receive(:message).and_return("foobar")
+      expect(strace).to receive(:backtrace).and_return(["foo","bar"])
    
-      example0 = mock("example-0")
-      example0.should_receive(:metadata).and_return({ :full_description => "foobar-success" \
+      example0 = double("example-0")
+      expect(example0).to receive(:metadata).and_return({ :full_description => "foobar-success" \
                                                     , :file_path        => "lib/foobar-s.rb" \
                                                     , :execution_result => { :run_time => 0.1 } \
                                                     })
    
-      example1 = mock("example-1")
-      example1.should_receive(:metadata).exactly(3).times.and_return({ :full_description => "foobar-failure" \
+      example1 = double("example-1")
+      expect(example1).to receive(:metadata).exactly(3).times.and_return({ :full_description => "foobar-failure" \
                                                                      , :file_path        => "lib/foobar-f.rb" \
                                                                      , :execution_result => { :exception_encountered => strace \
                                                                                             , :run_time              => 0.1 \
                                                                                             }
                                                                      })
 
-      example2 = mock("example-2")
-      example2.should_receive(:metadata).and_return({ :full_description => "foobar-pending" \
+      example2 = double("example-2")
+      expect(example2).to receive(:metadata).and_return({ :full_description => "foobar-pending" \
                                                    , :file_path        => "lib/foobar-s.rb" \
                                                    , :execution_result => { :run_time => 0.1 } \
                                                    })
@@ -144,7 +144,7 @@ describe JUnitFormatter do
       f.example_pending(example2)      
       f.dump_summary("0.1", 3, 1, 1)
 
-      output.string.should == <<-EOF
+      expect(output.string).to eq(<<-EOF)
 <?xml version="1.0" encoding="utf-8" ?>
 <testsuite errors="0" failures="1" skipped="1" tests="3" time="0.1" timestamp="#{@now.iso8601}">
   <properties />
@@ -162,8 +162,8 @@ describe JUnitFormatter do
     end
 
     it "should escape characteres <,>,&,\" before building xml" do
-      example0 = mock("example-0")
-      example0.should_receive(:metadata).and_return({ :full_description => "foobar-success >>> &\"& <<<" \
+      example0 = double("example-0")
+      expect(example0).to receive(:metadata).and_return({ :full_description => "foobar-success >>> &\"& <<<" \
                                                     , :file_path        => "lib/>foobar-s.rb" \
                                                     , :execution_result => { :run_time => 0.1 } \
                                                     })
@@ -173,7 +173,7 @@ describe JUnitFormatter do
       f.example_passed(example0)
       f.dump_summary("0.1", 2, 1, 0)
 
-      output.string.should == <<-EOF
+      expect(output.string).to eq(<<-EOF)
 <?xml version="1.0" encoding="utf-8" ?>
 <testsuite errors="0" failures="1" skipped="0" tests="2" time="0.1" timestamp="#{@now.iso8601}">
   <properties />
