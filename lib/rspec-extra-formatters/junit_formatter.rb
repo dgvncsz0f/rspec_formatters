@@ -30,6 +30,7 @@ require "time"
 require "rspec/core/formatters/base_formatter"
 
 class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
+  RSpec::Core::Formatters.register self, :example_passed, :example_failed, :example_pending, :dump_summary
 
   attr_reader :test_results
 
@@ -38,36 +39,32 @@ class JUnitFormatter < RSpec::Core::Formatters::BaseFormatter
     @test_results = { :failures => [], :successes => [], :skipped => [] }
   end
 
-  def example_passed(example)
-    super(example)
-    @test_results[:successes].push(example)
+  def example_passed(notification)
+    @test_results[:successes].push(notification.example)
   end
 
-  def example_pending(example)
-    super(example)
-    @test_results[:skipped].push(example)
+  def example_pending(notification)
+    @test_results[:skipped].push(notification.example)
   end
 
-  def example_failed(example)
-    super(example)
-    @test_results[:failures].push(example)
+  def example_failed(notification)
+    @test_results[:failures].push(notification.example)
   end
 
-  def read_failure(t)
-    exception = t.metadata[:execution_result][:exception_encountered] || t.metadata[:execution_result][:exception]
+  def read_failure(example)
+    exception = example.metadata[:execution_result][:exception_encountered] || example.metadata[:execution_result][:exception]
     message = ""
     unless (exception.nil?)
       message  = exception.message
       message += "\n"
-      message += format_backtrace(exception.backtrace, t).join("\n")
+      message += format_backtrace(exception.backtrace, example).join("\n")
     end
     return(message)
   end
 
-  def dump_summary(duration, example_count, failure_count, pending_count)
-    super(duration, example_count, failure_count, pending_count)
+  def dump_summary(summary)
     output.puts("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
-    output.puts("<testsuite errors=\"0\" failures=\"#{failure_count}\" skipped=\"#{pending_count}\" tests=\"#{example_count}\" time=\"#{duration}\" timestamp=\"#{Time.now.iso8601}\">")
+    output.puts("<testsuite errors=\"0\" failures=\"#{summary.failure_count}\" skipped=\"#{summary.pending_count}\" tests=\"#{summary.example_count}\" time=\"#{summary.duration}\" timestamp=\"#{Time.now.iso8601}\">")
     output.puts("  <properties />")
     @test_results[:successes].each do |t|
       md          = t.metadata

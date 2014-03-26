@@ -27,9 +27,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require "stringio"
+require "rspec/core/notifications"
 require File.expand_path(File.dirname(__FILE__) + "/../spec_helper.rb")
 
 describe JUnitFormatter do
+
+  def example_notification(description, opts={})
+    metadata = {
+      :execution_result => {:run_time => 0.01},
+      :full_description => description,
+      :file_path => "./spec/rspec-extra-formatters/junit_formatter_spec.rb" 
+    }.merge(opts)
+    dummy_example = double(:dummy_example)
+    allow(dummy_example).to receive(:metadata).and_return(metadata)
+    RSpec::Core::Notifications::ExampleNotification.new(dummy_example)
+  end
 
   before(:each) do
     @now = Time.now
@@ -44,8 +56,9 @@ describe JUnitFormatter do
 
     it "should push the example obj into success list" do
       f = JUnitFormatter.new(StringIO.new)
-      f.example_passed("foobar")
-      expect(f.test_results[:successes]).to eql(["foobar"])
+      notification = example_notification("foobar")
+      f.example_passed(notification)
+      expect(f.test_results[:successes]).to eql([notification.example])
     end
 
   end
@@ -54,8 +67,9 @@ describe JUnitFormatter do
 
     it "should push the example obj into failures list" do
       f = JUnitFormatter.new(StringIO.new)
-      f.example_failed("foobar")
-      expect(f.test_results[:failures]).to eql(["foobar"])
+      notification = example_notification("foobar")
+      f.example_failed(notification)
+      expect(f.test_results[:failures]).to eql([notification.example])
     end
 
   end
@@ -64,8 +78,9 @@ describe JUnitFormatter do
 
     it "should push the example obj into the skipped list" do
       f = JUnitFormatter.new(StringIO.new)
-      f.example_pending("foobar")
-      expect(f.test_results[:skipped]).to eql(["foobar"])
+      notification = example_notification("foobar")
+      f.example_pending(notification)
+      expect(f.test_results[:skipped]).to eql([notification.example])
     end
 
   end
@@ -73,12 +88,14 @@ describe JUnitFormatter do
   describe "read_failure" do
 
     it "should ignore if there is no exception" do
-      example = double("example")
-      expect(example).to receive(:metadata).exactly(2).times.and_return({:execution_result => { :exception_encountered => nil \
-                                                                                          , :exception => nil \
-                                                                                          }})
+      notification = example_notification("example", {
+        :execution_result => {
+          :exception_encountered => nil,
+          :exception => nil
+        }
+      })
       f = JUnitFormatter.new(StringIO.new)
-      expect(f.read_failure(example)).to eql("")
+      expect(f.read_failure(notification.example)).to eql("")
     end
 
     it "should attempt to read exception if exception encountered is nil" do
@@ -86,13 +103,15 @@ describe JUnitFormatter do
       expect(strace).to receive(:message).and_return("foobar")
       expect(strace).to receive(:backtrace).and_return(["foo","bar"])
 
-      example = double("example")
-      expect(example).to receive(:metadata).exactly(3).times.and_return({:execution_result => { :exception_encountered => nil \
-                                                                                          , :exception => strace \
-                                                                                          }})
+      notification = example_notification("example", {
+        :execution_result => {
+          :exception_encountered => nil,
+          :exception => strace
+        }
+      })
 
       f = JUnitFormatter.new(StringIO.new)
-      expect(f.read_failure(example)).to eql("foobar\nfoo\nbar")
+      expect(f.read_failure(notification.example)).to eql("foobar\nfoo\nbar")
     end
 
     it "should read message and backtrace from the example" do
@@ -100,11 +119,13 @@ describe JUnitFormatter do
       expect(strace).to receive(:message).and_return("foobar")
       expect(strace).to receive(:backtrace).and_return(["foo","bar"])
 
-      example    = double("example")
-      expect(example).to receive(:metadata).exactly(2).times.and_return({:execution_result => {:exception_encountered => strace}})
+      notification = example_notification("example", {
+          :execution_result => {:exception_encountered => strace}
+        }
+      )
 
       f = JUnitFormatter.new(StringIO.new)
-      expect(f.read_failure(example)).to eql("foobar\nfoo\nbar")
+      expect(f.read_failure(notification.example)).to eql("foobar\nfoo\nbar")
     end
 
   end
@@ -116,33 +137,41 @@ describe JUnitFormatter do
       expect(strace).to receive(:message).and_return("foobar")
       expect(strace).to receive(:backtrace).and_return(["foo","bar"])
    
-      example0 = double("example-0")
-      expect(example0).to receive(:metadata).and_return({ :full_description => "foobar-success" \
-                                                    , :file_path        => "lib/foobar-s.rb" \
-                                                    , :execution_result => { :run_time => 0.1 } \
-                                                    })
+      example0 = example_notification("example-0", {
+        :full_description => "foobar-success",
+        :file_path        => "lib/foobar-s.rb",
+        :execution_result => { :run_time => 0.1 }
+      })
    
-      example1 = double("example-1")
-      expect(example1).to receive(:metadata).exactly(3).times.and_return({ :full_description => "foobar-failure" \
-                                                                     , :file_path        => "lib/foobar-f.rb" \
-                                                                     , :execution_result => { :exception_encountered => strace \
-                                                                                            , :run_time              => 0.1 \
-                                                                                            }
-                                                                     })
+      example1 = example_notification("example-1", {
+        :full_description => "foobar-failure",
+        :file_path        => "lib/foobar-f.rb",
+        :execution_result => {
+          :exception_encountered => strace,
+          :run_time              => 0.1
+        }
+      })
 
-      example2 = double("example-2")
-      expect(example2).to receive(:metadata).and_return({ :full_description => "foobar-pending" \
-                                                   , :file_path        => "lib/foobar-s.rb" \
-                                                   , :execution_result => { :run_time => 0.1 } \
-                                                   })
+      example2 = example_notification("example-2", {
+        :full_description => "foobar-pending",
+        :file_path        => "lib/foobar-s.rb",
+        :execution_result => { :run_time => 0.1 }
+      })
 
    
+      summary = double(
+        :summary,
+        :failure_count => 1,
+        :pending_count => 1,
+        :example_count => 3,
+        :duration => "0.1"
+      )
       output = StringIO.new
       f = JUnitFormatter.new(output)
       f.example_passed(example0)
       f.example_failed(example1)
       f.example_pending(example2)      
-      f.dump_summary("0.1", 3, 1, 1)
+      f.dump_summary(summary)
 
       expect(output.string).to eq(<<-EOF)
 <?xml version="1.0" encoding="utf-8" ?>
@@ -162,16 +191,23 @@ describe JUnitFormatter do
     end
 
     it "should escape characteres <,>,&,\" before building xml" do
-      example0 = double("example-0")
-      expect(example0).to receive(:metadata).and_return({ :full_description => "foobar-success >>> &\"& <<<" \
-                                                    , :file_path        => "lib/>foobar-s.rb" \
-                                                    , :execution_result => { :run_time => 0.1 } \
-                                                    })
+      example0 = example_notification("example-0", {
+        :full_description => "foobar-success >>> &\"& <<<",
+        :file_path        => "lib/>foobar-s.rb",
+        :execution_result => { :run_time => 0.1 }
+      })
 
+      summary = double(
+        :summary,
+        :failure_count => 1,
+        :pending_count => 0,
+        :example_count => 2,
+        :duration => "0.1"
+      )
       output = StringIO.new
       f = JUnitFormatter.new(output)
       f.example_passed(example0)
-      f.dump_summary("0.1", 2, 1, 0)
+      f.dump_summary(summary)
 
       expect(output.string).to eq(<<-EOF)
 <?xml version="1.0" encoding="utf-8" ?>
