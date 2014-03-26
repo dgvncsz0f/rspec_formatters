@@ -29,6 +29,7 @@
 require "rspec/core/formatters/base_formatter"
 
 class TapFormatter < RSpec::Core::Formatters::BaseFormatter
+  RSpec::Core::Formatters.register self, :example_passed, :example_failed, :example_pending
 
   attr_reader :total
     $VERBOSE = nil
@@ -42,35 +43,26 @@ class TapFormatter < RSpec::Core::Formatters::BaseFormatter
     @total = 0
   end
 
-  def start(example_count)
-      super(example_count)
+  def start(example_count_notification)
       output.puts("TAP version 13")
-      output.puts("1.." + example_count.to_s)
-
+      output.puts("1.." + example_count_notification.count.to_s)
   end
 
-  def example_passed(example)
-    super(example)
-    tap_example_output(OK, example)
+  def example_passed(notification)
+    tap_example_output(OK, notification.example)
   end
 
-  def example_pending(example)
-    super(example)
-    tap_example_output(NOT_OK, example, SKIP)
+  def example_pending(notification)
+    tap_example_output(NOT_OK, notification.example, SKIP)
   end
 
-  def example_failed(example)
-    super(example)
-    tap_example_output(NOT_OK, example)
+  def example_failed(notification)
+    tap_example_output(NOT_OK, notification.example)
     output.puts("    ---")
-    my_exception = example.exception.to_s
+    my_exception = notification.example.exception.to_s
     my_exception.gsub! /"/, ''
     output.puts("     #{my_exception} ")
     output.puts("     ...")
-  end
-
-  def dump_summary(duration, example_count, failure_count, pending_count)
-    super(duration, example_count, failure_count, pending_count)
   end
 
   private
