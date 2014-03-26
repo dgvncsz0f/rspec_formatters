@@ -31,22 +31,33 @@ require File.expand_path(File.dirname(__FILE__) + "/../spec_helper.rb")
 
 describe TapFormatter do
 
+  def example_notification(description, opts={})
+    metadata = {
+      :execution_result => {:run_time => 0.01},
+      :full_description => description,
+      :file_path => "./spec/rspec-extra-formatters/tap_formatter_spec.rb" 
+    }.merge(opts)
+    dummy_example = double(:dummy_example)
+    allow(dummy_example).to receive(:metadata).and_return(metadata)
+    RSpec::Core::Notifications::ExampleNotification.new(dummy_example)
+  end
+
   it "should initialize the counter to 0" do
-    TapFormatter.new(StringIO.new).total.should eql(0)
+    expect(TapFormatter.new(StringIO.new).total).to eql(0)
   end
 
   describe "example_passed" do
 
     it "should increment the counter and use the full_description attribute" do
-      example = mock("example")
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
+      notification = example_notification("example")
+      expect(notification.example).to receive(:metadata).and_return({:full_description => "foobar"})
 
       output = StringIO.new
       f = TapFormatter.new(output)
-      f.example_passed(example)
+      f.example_passed(notification)
 
-      f.total.should eql(1)
-      output.string.should == "ok 1 - foobar\n"
+      expect(f.total).to eql(1)
+      expect(output.string).to eq("ok 1 - foobar\n")
     end
 
   end
@@ -54,16 +65,15 @@ describe TapFormatter do
   describe "example_failed" do
 
     it "should increment the counter and use the full_description attribute" do
-      example = mock("example")
-      example.stub(:exception) { "exception message" }
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
+      notification = example_notification("example", {:full_description => "foobar"})
+      allow(notification.example).to receive(:exception) { "exception message" }
 
       output = StringIO.new
       f = TapFormatter.new(output)
-      f.example_failed(example)
+      f.example_failed(notification)
       
-      f.total.should eql(1)
-      output.string.should == <<-EOF
+      expect(f.total).to eql(1)
+      expect(output.string).to eq(<<-EOF)
 not ok 1 - foobar
     ---
      exception message 
@@ -75,37 +85,35 @@ not ok 1 - foobar
   describe "example_pending" do
 
     it "should do the same as example_failed with SKIP comment" do
-      example = mock("example")
-      example.stub(:exception) { "exception message" }
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
+      notification = example_notification("example", {:full_description => "foobar"})
+      allow(notification.example).to receive(:exception) { "exception message" }
       
       output = StringIO.new
       f = TapFormatter.new(output)
-      f.example_pending(example)
+      f.example_pending(notification)
       
-      f.total.should eql(1)
-      output.string.should == "not ok 1 - # SKIP foobar\n"
+      expect(f.total).to eql(1)
+      expect(output.string).to eq("not ok 1 - # SKIP foobar\n")
     end
 
   end
 
-  describe "dump_summary" do
+  describe "start" do
 
-    it "should print the number of tests if there were tests" do
-      example = mock("example")
-      example.stub(:exception) { "exception message" }
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
-      example.should_receive(:metadata).and_return({:full_description => "foobar"})
+    it "should print the number of tests" do
+      notification = example_notification("example", {:full_description => "foobar"})
+      allow(notification.example).to receive(:exception) { "exception message" }
       
       output = StringIO.new
       f = TapFormatter.new(output)
-      f.example_passed(example)
-      f.example_failed(example)
-      f.example_pending(example)
-      f.dump_summary(0.1, 3, 1, 1)
+      f.start(double(RSpec::Core::Notifications::CountNotification, :count => 3))
+      f.example_passed(notification)
+      f.example_failed(notification)
+      f.example_pending(notification)
 
-      output.string.should == <<-EOF
+      expect(output.string).to eq(<<-EOF)
+TAP version 13
+1..3
 ok 1 - foobar
 not ok 2 - foobar
     ---
@@ -113,11 +121,6 @@ not ok 2 - foobar
      ...
 not ok 3 - # SKIP foobar
       EOF
-    end
-
-    it "should print nothing if there were not tests" do
-      f = TapFormatter.new(@output)
-      f.dump_summary(0, 0, 0, 0)
     end
 
   end
